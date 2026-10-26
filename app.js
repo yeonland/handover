@@ -228,6 +228,7 @@
       }
       if (!on(L.k)) return;
       h += '<section class="sheet"><div class="sh"><h2>' + L.t + '</h2><span class="tot" id="cnt-' + L.k + '"></span></div>' +
+        (L.names ? '<div class="chips" id="chips-' + L.k + '"></div>' : '') +
         '<div class="rows" id="rows-' + L.k + '"></div>' +
         '<button type="button" class="add" data-add="' + L.k + '">+ 한 줄 추가</button>';
       if (L.names) h += '<datalist id="dl-' + L.k + '"></datalist>';
@@ -274,6 +275,15 @@
     const dl = document.getElementById('dl-' + k);
     if (!dl) return;
     dl.innerHTML = (S.names[k] || []).map(function (n) { return '<option value="' + esc(n) + '">'; }).join('');
+    const ch = document.getElementById('chips-' + k);
+    if (ch) {
+      ch.innerHTML = (S.names[k] || []).length ? (S.names[k] || []).map(function (n, i) {
+        const row = S.rows[k].filter(function (r) { return r.a.trim() === n && r.b.trim(); })[0];
+        return '<span class="chip"><button type="button" class="chipadd" data-nk="' + k + '" data-ni="' + i + '" data-d="1" aria-label="' + esc(n) + ' 1보루 추가">' + esc(n) + ' +1' + (row ? ' (' + esc(row.b.trim()) + ')' : '') + '</button>' +
+          '<button type="button" data-nk="' + k + '" data-ni="' + i + '" data-d="-1" aria-label="' + esc(n) + ' 1보루 빼기">−</button>' +
+          '<button type="button" data-nk="' + k + '" data-ni="' + i + '" data-d="x" aria-label="' + esc(n) + ' 버튼 지우기">×</button></span>';
+      }).join('') : '<p class="none">한 번 입력해 두면 자주 파는 담배가 버튼으로 생겨요.</p>';
+    }
   }
 
   function validRows(L) {
@@ -384,6 +394,14 @@
       arr[i] = Math.max(0, arr[i] + (b.dataset.act === 'inc' ? 1 : -1));
       st.querySelector('input').value = arr[i];
       refresh();
+    } else if (b.dataset.nk) {
+      const k = b.dataset.nk, nm = S.names[k][Number(b.dataset.ni)], d = b.dataset.d;
+      if (d === 'x') { S.names[k].splice(Number(b.dataset.ni), 1); save(); renderNames(k); return; }
+      const row = S.rows[k].filter(function (r) { return r.a.trim() === nm; })[0];
+      if (row) { row.b = String(Math.max(0, (Number(digits(row.b)) || 0) + Number(d))); }
+      else if (d === '1') S.rows[k].push({ a: nm, b: '1' });
+      S.rows[k] = S.rows[k].filter(function (r) { return !(r.a.trim() === nm && r.b === '0'); });
+      renderRows(k); renderNames(k); refresh();
     } else if (b.dataset.add) {
       const k = b.dataset.add;
       S.rows[k].push({ a: '', b: '' });
@@ -418,7 +436,7 @@
       if (wi) { wi.scrollIntoView({ block: 'center' }); wi.focus(); }
     } else if (b.dataset.rm) {
       S.rows[b.dataset.rm].splice(Number(b.dataset.i), 1);
-      renderRows(b.dataset.rm);
+      renderRows(b.dataset.rm); renderNames(b.dataset.rm);
       refresh();
     }
   });
@@ -483,6 +501,11 @@
     if (e.target.closest('.stepper') && e.target.tagName === 'INPUT') e.target.select();
   });
   app.addEventListener('focusout', function (e) {
+    const t = e.target;
+    if (t.dataset && t.dataset.f === 'a' && t.dataset.k === 'cig') {
+      const n = t.value.trim();
+      if (n && S.names.cig.indexOf(n) < 0) { S.names.cig.push(n); save(); renderNames('cig'); }
+    }
     if (e.target.closest('.stepper') && e.target.tagName === 'INPUT') {
       const st = e.target.closest('.stepper');
       e.target.value = getArr(st.dataset.group)[Number(st.dataset.i)];
