@@ -43,6 +43,7 @@
       manual: [],
       readNext: {},
       cold: {},
+      boxes: {},
       tasks: { d: '', done: {} }
     };
   }
@@ -50,6 +51,8 @@
     { id: 'sand', t: '20:30', m: 20 * 60 + 30, n: '샌드위치·햄버거 소비기한 확인' },
     { id: 'exp', t: '22:30', m: 22 * 60 + 30, n: '소비기한 점검' },
     { id: 'chair', t: '23:00', m: 23 * 60, n: '테라스 의자 정리' },
+    { id: 'cool', t: '근무 중', m: null, n: '냉장 진열 · 검수확정 (사진 보내기)' },
+    { id: 'waste', t: '폐기', m: null, n: '폐기 나오면 폐기 사진 보내기' },
     { id: 'cold', t: '근무 중', m: null, n: '저온 2차 물류정리' }
   ];
   const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -121,7 +124,7 @@
       }
       return '<label class="task ' + cls + '"><input type="checkbox" data-task="' + t.id + '"' + (done ? ' checked' : '') + '>' +
         '<span class="tt">' + t.t + '</span><span class="tn">' + t.n + '</span><span class="ts">' + st + '</span></label>' +
-        (t.id === 'cold' ? '<div class="coldtime"><label for="coldTime">도착 시각</label><input type="time" id="coldTime" value="' + esc(S.tasks.time || '') + '"></div>' + coldHintHtml() : '');
+        (t.id === 'cold' ? '<div class="coldtime"><label for="coldTime">도착 시각</label><input type="time" id="coldTime" value="' + esc(S.tasks.time || '') + '"><label for="boxCnt">정리</label><input type="number" id="boxCnt" inputmode="numeric" min="0" class="boxcnt" value="' + esc(S.boxes[todayKey()] === undefined ? '' : String(S.boxes[todayKey()])) + '"><span>박스</span></div>' + coldHintHtml() : '');
     }).join('');
   }
   let S = fresh();
@@ -133,7 +136,7 @@
       if (p.week === undefined) f.week = JSON.parse(JSON.stringify(LEGACY_WEEK));
       applyCfg(f.cfg);
       if (f.coins.length === COINS.length && f.gift.length === GIFT.length && f.giftSold.length === GIFT.length && f.bags.length === BAGS.length && f.stickers.length === STICKERS.length) S = f;
-      else { S.history = f.history || {}; S.wage = f.wage; S.ov = f.ov; S.notices = f.notices; S.manual = f.manual; S.readNext = f.readNext; S.week = f.week; S.cfg = f.cfg; S.cc = f.cc; S.exp = f.exp; S.expCfg = f.expCfg; S.bags = BAGS.map(function () { return 0; }); S.stickers = STICKERS.map(function () { return 0; }); S.me = f.me; S.repFuture = f.repFuture; S.cold = f.cold; }
+      else { S.history = f.history || {}; S.wage = f.wage; S.ov = f.ov; S.notices = f.notices; S.manual = f.manual; S.readNext = f.readNext; S.week = f.week; S.cfg = f.cfg; S.cc = f.cc; S.exp = f.exp; S.expCfg = f.expCfg; S.bags = BAGS.map(function () { return 0; }); S.stickers = STICKERS.map(function () { return 0; }); S.me = f.me; S.repFuture = f.repFuture; S.cold = f.cold; S.boxes = f.boxes || {}; }
     }
   } catch (e) {}
   function applyCfg(c) {
@@ -385,7 +388,7 @@
     } else if (b.dataset.phdel) {
       phDelete(b.dataset.phdel);
     } else if (b.dataset.phshare !== undefined) {
-      phShare(Number(b.dataset.phshare));
+      phShare(b.dataset.phshare.split(':')[0], Number(b.dataset.phshare.split(':')[1]));
     } else if (b.id === 'nextCopy') {
       const nt = (S.next || '').trim();
       if (!nt) { say('적은 내용이 없어요.'); return; }
@@ -420,6 +423,10 @@
       const cm = coldMin(el.value);
       if (cm === null) delete S.cold[todayKey()]; else S.cold[todayKey()] = cm;
       refresh();
+    } else if (el.id === 'boxCnt') {
+      const bn = parseInt(el.value, 10);
+      if (isNaN(bn) || bn < 0) delete S.boxes[todayKey()]; else S.boxes[todayKey()] = bn;
+      save();
     } else if (el.id === 'note') {
       S.note = el.value;
       refresh();
@@ -437,8 +444,8 @@
     }
   });
   app.addEventListener('change', function (e) {
-    if (e.target.id === 'phIn') {
-      phAdd(e.target.files);
+    if (e.target.classList.contains('phin')) {
+      phAdd(e.target.files, e.target.dataset.phk);
       e.target.value = '';
     } else if (e.target.dataset.nread !== undefined) {
       S.readNext[e.target.dataset.nread] = e.target.checked;
@@ -883,7 +890,7 @@
 
   const bkBox = document.getElementById('bkBox');
   document.getElementById('bkCopy').addEventListener('click', function () {
-    const j = JSON.stringify({ v: 4, history: S.history, ov: S.ov, wage: S.wage, notices: S.notices, manual: S.manual, readNext: S.readNext, week: S.week, cfg: S.cfg, exp: S.exp, expCfg: { times: S.expCfg.times }, me: S.me, repFuture: S.repFuture, cold: S.cold });
+    const j = JSON.stringify({ v: 4, history: S.history, ov: S.ov, wage: S.wage, notices: S.notices, manual: S.manual, readNext: S.readNext, week: S.week, cfg: S.cfg, exp: S.exp, expCfg: { times: S.expCfg.times }, me: S.me, repFuture: S.repFuture, cold: S.cold, boxes: S.boxes });
     bkBox.value = j;
     const fb = function () { bkBox.focus(); bkBox.select(); say('백업 글이 선택됐어요. 길게 눌러 복사하세요.'); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(j).then(function () { say('백업을 복사했어요. 메모장이나 카톡 나에게 보내기에 붙여넣어 두세요.'); }, fb);
@@ -914,6 +921,11 @@
       if (o.cold && typeof o.cold === 'object') {
         Object.keys(o.cold).forEach(function (k) {
           if (/^\d{4}-\d{2}-\d{2}$/.test(k) && typeof o.cold[k] === 'number') S.cold[k] = o.cold[k];
+        });
+      }
+      if (o.boxes && typeof o.boxes === 'object') {
+        Object.keys(o.boxes).forEach(function (k) {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(k) && typeof o.boxes[k] === 'number' && o.boxes[k] >= 0) S.boxes[k] = o.boxes[k];
         });
       }
       if (o.me && typeof o.me.name === 'string') S.me = { name: o.me.name, no: String(o.me.no || '') };
@@ -1035,31 +1047,38 @@
     });
   }
   function phSay(m) { const e = document.getElementById('phStatus'); if (e) e.textContent = m; }
+  const PHK = [{ k: 'cool', t: '냉장 진열 사진', f: '냉장진열' }, { k: 'waste', t: '폐기 사진', f: '폐기' }, { k: 'etc', t: '기타 사진', f: '사진' }];
+  function phKind(x) { return x.k || 'etc'; }
+  function phToday(k) { return PH.filter(function (x) { return x.d === todayKey() && phKind(x) === k; }).sort(function (a, b) { return a.at - b.at; }); }
   function renderPhotos() {
     const box = document.getElementById('photoBox');
     if (!box) return;
-    const today = PH.filter(function (x) { return x.d === todayKey(); });
-    box.innerHTML = '<div class="sh"><h2>사진</h2><span class="tot">' + (today.length ? today.length + '장' : '') + '</span></div>' +
-      '<p class="none">진열 사진처럼 점장님께 보낼 사진을 올려 두는 곳이에요. 올리면 자동으로 작게 줄여 저장해요.</p>' +
-      '<div class="phrow"><label class="phbtn">사진 추가<input type="file" id="phIn" accept="image/*" multiple hidden></label>' +
-      (today.length <= PH_GROUP && today.length ? '<button type="button" class="phbtn" data-phshare="0">카톡 등으로 보내기</button>' : '') + '</div>' +
-      (today.length > PH_GROUP ? '<p class="none">한 번에 보낼 수 있는 사진 수에 제한이 있어서 ' + PH_GROUP + '장씩 나눠 보내요.</p><div class="phrow">' + Array.apply(null, { length: Math.ceil(today.length / PH_GROUP) }).map(function (_, g) {
-        const a = g * PH_GROUP + 1, z = Math.min(today.length, (g + 1) * PH_GROUP);
-        return '<button type="button" class="phbtn" data-phshare="' + g * PH_GROUP + '">' + a + '~' + z + '번 보내기</button>';
-      }).join('') + '</div>' : '') +
-      (today.length ? '<div class="phgrid">' + today.sort(function (a, b) { return a.at - b.at; }).map(function (x) {
-        return '<div class="ph"><img src="' + phUrl(x) + '" alt="오늘 올린 사진" data-phview="' + x.id + '"><button type="button" class="rm" data-phdel="' + x.id + '" aria-label="사진 지우기">×</button></div>';
-      }).join('') + '</div>' : '') +
-      '<p class="calstatus" id="phStatus" role="status" aria-live="polite">' + (phOk ? '' : '이 브라우저에서는 사진을 저장할 수 없어서, 창을 닫으면 사라져요.') + '</p>';
+    const total = PH.filter(function (x) { return x.d === todayKey(); }).length;
+    let h = '<div class="sh"><h2>사진</h2><span class="tot">' + (total ? total + '장' : '') + '</span></div>' +
+      '<p class="none">점장님께 보낼 사진을 종류별로 올려 두는 곳이에요. 올리면 자동으로 작게 줄여 저장해요.</p>';
+    PHK.forEach(function (K) {
+      const today = phToday(K.k);
+      h += '<div class="phkind"><h3>' + K.t + (today.length ? ' <span class="tot">' + today.length + '장</span>' : '') + '</h3>' +
+        '<div class="phrow"><label class="phbtn">사진 추가<input type="file" class="phin" data-phk="' + K.k + '" accept="image/*" multiple hidden></label>' +
+        (today.length && today.length <= PH_GROUP ? '<button type="button" class="phbtn" data-phshare="' + K.k + ':0">카톡 등으로 보내기</button>' : '') + '</div>' +
+        (today.length > PH_GROUP ? '<p class="none">한 번에 보낼 수 있는 사진 수에 제한이 있어서 ' + PH_GROUP + '장씩 나눠 보내요.</p><div class="phrow">' + Array.apply(null, { length: Math.ceil(today.length / PH_GROUP) }).map(function (_, g) {
+          const a = g * PH_GROUP + 1, z = Math.min(today.length, (g + 1) * PH_GROUP);
+          return '<button type="button" class="phbtn" data-phshare="' + K.k + ':' + g * PH_GROUP + '">' + a + '~' + z + '번 보내기</button>';
+        }).join('') + '</div>' : '') +
+        (today.length ? '<div class="phgrid">' + today.map(function (x) {
+          return '<div class="ph"><img src="' + phUrl(x) + '" alt="오늘 올린 ' + K.t + '" data-phview="' + x.id + '"><button type="button" class="rm" data-phdel="' + x.id + '" aria-label="사진 지우기">×</button></div>';
+        }).join('') + '</div>' : '') + '</div>';
+    });
+    box.innerHTML = h + '<p class="calstatus" id="phStatus" role="status" aria-live="polite">' + (phOk ? '' : '이 브라우저에서는 사진을 저장할 수 없어서, 창을 닫으면 사라져요.') + '</p>';
   }
-  function phAdd(files) {
+  function phAdd(files, kind) {
     const list = Array.prototype.slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); });
     if (!list.length) { phSay('사진 파일을 골라 주세요.'); return; }
     phSay('사진을 줄이는 중이에요…');
     let chain = Promise.resolve(), fail = 0;
     list.forEach(function (f) {
       chain = chain.then(function () { return phShrink(f); }).then(function (blob) {
-        const rec = { id: 'p' + Date.now() + Math.floor(Math.random() * 1000), d: todayKey(), at: Date.now(), blob: blob };
+        const rec = { id: 'p' + Date.now() + Math.floor(Math.random() * 1000), d: todayKey(), at: Date.now(), blob: blob, k: kind || 'etc' };
         PH.push(rec);
         return phTx('readwrite', function (st) { return st.put(rec); });
       }).catch(function () { fail++; });
@@ -1078,17 +1097,18 @@
     try { renderDetail(); } catch (err) {}
   }
   const PH_GROUP = 10;
-  function phShare(start) {
-    const today = PH.filter(function (x) { return x.d === todayKey(); }).sort(function (a, b) { return a.at - b.at; });
+  function phShare(kind, start) {
+    const today = phToday(kind);
+    const KF = PHK.filter(function (K) { return K.k === kind; })[0];
     const part = today.slice(start, start + PH_GROUP);
-    const files = part.map(function (x, i) { return new File([x.blob], todayKey() + '_' + (start + i + 1) + '.jpg', { type: 'image/jpeg' }); });
+    const files = part.map(function (x, i) { return new File([x.blob], todayKey() + '_' + (KF ? KF.f : '사진') + '_' + (start + i + 1) + '.jpg', { type: 'image/jpeg' }); });
     if (!navigator.share) { phSay('이 브라우저는 바로 보내기를 지원하지 않아요. 사진을 눌러 크게 연 뒤 길게 눌러 저장하고 카톡에서 보내 주세요.'); return; }
     try {
       if (navigator.canShare && !navigator.canShare({ files: files })) {
         phSay('이 브라우저는 사진 보내기를 지원하지 않아요. 사진을 눌러 크게 연 뒤 길게 눌러 저장하고 카톡에서 보내 주세요.');
         return;
       }
-      navigator.share({ files: files, title: '근무교대 사진' }).then(function () {
+      navigator.share({ files: files, title: KF ? KF.t : '근무교대 사진' }).then(function () {
         phSay((start + 1) + '~' + (start + part.length) + '번 사진을 보냈어요.');
       }).catch(function (err) {
         if (err && err.name === 'AbortError') { phSay('보내기를 취소했어요.'); return; }
