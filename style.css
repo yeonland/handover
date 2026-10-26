@@ -68,6 +68,7 @@ h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 20px
 .task.late .ts { color: var(--warn); }
 .task.done .tn { text-decoration: line-through; color: var(--muted); font-weight: 400; }
 .coldtime { display: flex; align-items: center; gap: 10px; padding: 0 0 10px 82px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.coldtime.nb { border-bottom: 0; padding-bottom: 4px; }
 .coldtime .boxcnt { width: 64px; text-align: center; }
 .coldtime input { min-height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); padding: 0 8px; font: 500 15px var(--f-mono); }
 .coldhint { padding-inline-start: 82px; }

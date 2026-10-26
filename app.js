@@ -44,6 +44,7 @@
       readNext: {},
       cold: {},
       boxes: {},
+      coldEnd: {},
       tasks: { d: '', done: {} }
     };
   }
@@ -75,7 +76,12 @@
     const h = Number(v.slice(0, 2)), mi = Number(v.slice(3, 5));
     return h * 60 + mi + (h < 5 ? 1440 : 0);
   }
-  function freshTasks() { const k = todayKey(); return { d: k, done: {}, time: S.cold[k] !== undefined ? toInput(S.cold[k]) : '' }; }
+  function freshTasks() { const k = todayKey(); return { d: k, done: {}, time: S.cold[k] !== undefined ? toInput(S.cold[k]) : '', end: S.coldEnd[k] !== undefined ? toInput(S.coldEnd[k]) : '' }; }
+  function coldTook() {
+    const a = coldMin(S.tasks.time || ''), b = coldMin(S.tasks.end || '');
+    if (a === null || b === null || b < a) return '';
+    return '약 ' + (b - a >= 60 ? Math.floor((b - a) / 60) + '시간 ' : '') + ((b - a) % 60 ? (b - a) % 60 + '분 ' : '') + '걸렸어요';
+  }
   function avgOf(list) { return list.reduce(function (a, b) { return a + b; }, 0) / list.length; }
   function coldInfo(dow) {
     const keys = Object.keys(S.cold);
@@ -124,7 +130,7 @@
       }
       return '<label class="task ' + cls + '"><input type="checkbox" data-task="' + t.id + '"' + (done ? ' checked' : '') + '>' +
         '<span class="tt">' + t.t + '</span><span class="tn">' + t.n + '</span><span class="ts">' + st + '</span></label>' +
-        (t.id === 'cold' ? '<div class="coldtime"><label for="coldTime">도착 시각</label><input type="time" id="coldTime" value="' + esc(S.tasks.time || '') + '"><label for="boxCnt">정리</label><input type="number" id="boxCnt" inputmode="numeric" min="0" class="boxcnt" value="' + esc(S.boxes[todayKey()] === undefined ? '' : String(S.boxes[todayKey()])) + '"><span>박스</span></div>' + coldHintHtml() : '');
+        (t.id === 'cold' ? '<div class="coldtime nb"><label for="coldTime">도착 시각</label><input type="time" id="coldTime" value="' + esc(S.tasks.time || '') + '"><label for="boxCnt">정리</label><input type="number" id="boxCnt" inputmode="numeric" min="0" class="boxcnt" value="' + esc(S.boxes[todayKey()] === undefined ? '' : String(S.boxes[todayKey()])) + '"><span>박스</span></div><div class="coldtime"><label for="coldEnd">완료 시각</label><input type="time" id="coldEnd" value="' + esc(S.tasks.end || '') + '"><span>' + coldTook() + '</span></div>' + coldHintHtml() : '');
     }).join('');
   }
   let S = fresh();
@@ -136,7 +142,7 @@
       if (p.week === undefined) f.week = JSON.parse(JSON.stringify(LEGACY_WEEK));
       applyCfg(f.cfg);
       if (f.coins.length === COINS.length && f.gift.length === GIFT.length && f.giftSold.length === GIFT.length && f.bags.length === BAGS.length && f.stickers.length === STICKERS.length) S = f;
-      else { S.history = f.history || {}; S.wage = f.wage; S.ov = f.ov; S.notices = f.notices; S.manual = f.manual; S.readNext = f.readNext; S.week = f.week; S.cfg = f.cfg; S.cc = f.cc; S.exp = f.exp; S.expCfg = f.expCfg; S.bags = BAGS.map(function () { return 0; }); S.stickers = STICKERS.map(function () { return 0; }); S.me = f.me; S.repFuture = f.repFuture; S.cold = f.cold; S.boxes = f.boxes || {}; }
+      else { S.history = f.history || {}; S.wage = f.wage; S.ov = f.ov; S.notices = f.notices; S.manual = f.manual; S.readNext = f.readNext; S.week = f.week; S.cfg = f.cfg; S.cc = f.cc; S.exp = f.exp; S.expCfg = f.expCfg; S.bags = BAGS.map(function () { return 0; }); S.stickers = STICKERS.map(function () { return 0; }); S.me = f.me; S.repFuture = f.repFuture; S.cold = f.cold; S.boxes = f.boxes || {}; S.coldEnd = f.coldEnd || {}; }
     }
   } catch (e) {}
   function applyCfg(c) {
@@ -423,6 +429,11 @@
       const cm = coldMin(el.value);
       if (cm === null) delete S.cold[todayKey()]; else S.cold[todayKey()] = cm;
       refresh();
+    } else if (el.id === 'coldEnd') {
+      S.tasks.end = el.value;
+      const em = coldMin(el.value);
+      if (em === null) delete S.coldEnd[todayKey()]; else S.coldEnd[todayKey()] = em;
+      save();
     } else if (el.id === 'boxCnt') {
       const bn = parseInt(el.value, 10);
       if (isNaN(bn) || bn < 0) delete S.boxes[todayKey()]; else S.boxes[todayKey()] = bn;
@@ -453,6 +464,8 @@
     } else if (e.target.dataset.nchk !== undefined) {
       S.notices[Number(e.target.dataset.nchk)].done = e.target.checked;
       save(); renderNotices();
+    } else if (e.target.id === 'coldEnd') {
+      save(); renderTasks();
     } else if (e.target.id === 'coldTime') {
       save(); renderTasks(); renderColdSheet();
     } else if (e.target.dataset.task) {
@@ -890,7 +903,7 @@
 
   const bkBox = document.getElementById('bkBox');
   document.getElementById('bkCopy').addEventListener('click', function () {
-    const j = JSON.stringify({ v: 4, history: S.history, ov: S.ov, wage: S.wage, notices: S.notices, manual: S.manual, readNext: S.readNext, week: S.week, cfg: S.cfg, exp: S.exp, expCfg: { times: S.expCfg.times }, me: S.me, repFuture: S.repFuture, cold: S.cold, boxes: S.boxes });
+    const j = JSON.stringify({ v: 4, history: S.history, ov: S.ov, wage: S.wage, notices: S.notices, manual: S.manual, readNext: S.readNext, week: S.week, cfg: S.cfg, exp: S.exp, expCfg: { times: S.expCfg.times }, me: S.me, repFuture: S.repFuture, cold: S.cold, boxes: S.boxes, coldEnd: S.coldEnd });
     bkBox.value = j;
     const fb = function () { bkBox.focus(); bkBox.select(); say('백업 글이 선택됐어요. 길게 눌러 복사하세요.'); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(j).then(function () { say('백업을 복사했어요. 메모장이나 카톡 나에게 보내기에 붙여넣어 두세요.'); }, fb);
@@ -921,6 +934,11 @@
       if (o.cold && typeof o.cold === 'object') {
         Object.keys(o.cold).forEach(function (k) {
           if (/^\d{4}-\d{2}-\d{2}$/.test(k) && typeof o.cold[k] === 'number') S.cold[k] = o.cold[k];
+        });
+      }
+      if (o.coldEnd && typeof o.coldEnd === 'object') {
+        Object.keys(o.coldEnd).forEach(function (k) {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(k) && typeof o.coldEnd[k] === 'number') S.coldEnd[k] = o.coldEnd[k];
         });
       }
       if (o.boxes && typeof o.boxes === 'object') {
