@@ -265,9 +265,9 @@
     const rows = S.rows[k];
     if (!rows.length) { box.innerHTML = '<p class="none">판매한 게 없으면 비워두세요.</p>'; return; }
     box.innerHTML = rows.map(function (r, i) {
-      return '<div class="row">' +
+      return '<div class="row' + (L.names ? ' cnt' : '') + '">' +
         ('<input class="rowin' + (L.a.num ? ' num' : '') + '" data-k="' + k + '" data-i="' + i + '" data-f="a" value="' + esc(r.a) + '" placeholder="' + esc(L.a.ph) + '" aria-label="' + esc(L.t) + ' ' + (i + 1) + '번째 ' + (L.money ? '내용' : '항목') + '"' + (L.a.num ? ' inputmode="numeric"' : '') + (L.names ? ' list="dl-' + k + '"' : '') + '>') +
-        '<input class="rowin num" data-k="' + k + '" data-i="' + i + '" data-f="b" value="' + esc(r.b) + '" placeholder="' + esc(L.b.ph) + '" aria-label="' + esc(L.t) + ' ' + (i + 1) + '번째 ' + (L.money ? '금액' : '수량') + '" inputmode="numeric">' +
+        (L.names ? '<div class="rstep"><button type="button" data-rdec="' + k + '" data-i="' + i + '" aria-label="' + esc(r.a || L.t) + ' 하나 줄이기">−</button><input class="rowin num" data-k="' + k + '" data-i="' + i + '" data-f="b" value="' + esc(r.b === '' ? '0' : r.b) + '" aria-label="' + esc(L.t) + ' ' + (i + 1) + '번째 수량" inputmode="numeric"><button type="button" data-rinc="' + k + '" data-i="' + i + '" aria-label="' + esc(r.a || L.t) + ' 하나 늘리기">+</button></div>' : '<input class="rowin num" data-k="' + k + '" data-i="' + i + '" data-f="b" value="' + esc(r.b) + '" placeholder="' + esc(L.b.ph) + '" aria-label="' + esc(L.t) + ' ' + (i + 1) + '번째 ' + (L.money ? '금액' : '수량') + '" inputmode="numeric">') +
         '<button type="button" class="rm" data-rm="' + k + '" data-i="' + i + '" aria-label="' + (i + 1) + '번째 줄 지우기">×</button></div>';
     }).join('');
   }
@@ -287,7 +287,7 @@
   }
 
   function validRows(L) {
-    return S.rows[L.k].filter(function (r) { return (L.sum || L.money) ? r.b.trim() : r.a.trim() && r.b.trim(); });
+    return S.rows[L.k].filter(function (r) { return (L.sum || L.money) ? r.b.trim() : r.a.trim() && r.b.trim() && !(L.names && !(Number(digits(r.b)) > 0)); });
   }
   function sumOf(rows) {
     return rows.reduce(function (a, r) { return a + (Number(digits(r.b)) || 0); }, 0);
@@ -394,6 +394,11 @@
       arr[i] = Math.max(0, arr[i] + (b.dataset.act === 'inc' ? 1 : -1));
       st.querySelector('input').value = arr[i];
       refresh();
+    } else if (b.dataset.rdec !== undefined || b.dataset.rinc !== undefined) {
+      const k = b.dataset.rdec !== undefined ? b.dataset.rdec : b.dataset.rinc, row = S.rows[k][Number(b.dataset.i)];
+      row.b = String(Math.max(0, (Number(digits(row.b)) || 0) + (b.dataset.rinc !== undefined ? 1 : -1)));
+      b.closest('.rstep').querySelector('input').value = row.b;
+      renderNames(k); refresh();
     } else if (b.dataset.nk) {
       const k = b.dataset.nk, nm = S.names[k][Number(b.dataset.ni)], d = b.dataset.d;
       if (d === 'x') { S.names[k].splice(Number(b.dataset.ni), 1); save(); renderNames(k); return; }
@@ -469,7 +474,7 @@
       refresh();
     } else if (el.dataset.k) {
       S.rows[el.dataset.k][Number(el.dataset.i)][el.dataset.f] = el.value;
-      refresh();
+      if (el.dataset.f === 'b') renderNames(el.dataset.k); refresh();
     }
   });
   app.addEventListener('change', function (e) {

@@ -53,10 +53,10 @@ h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 20px
 .lab { min-width: 0; font-weight: 500; }
 .sub { display: block; font-family: var(--f-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-.stepper { display: inline-flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
-.stepper button { width: 44px; min-height: 44px; border: 0; background: transparent; color: var(--ink); font-size: 20px; cursor: pointer; }
-.stepper button:active { background: var(--line); }
-.stepper input { width: 52px; border: 0; border-inline: 1px solid var(--line); background: var(--surface); color: var(--ink); text-align: center; font: 500 17px var(--f-mono); font-variant-numeric: tabular-nums; padding: 0; }
+.stepper, .rstep { display: inline-flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.stepper button, .rstep button { width: 44px; min-height: 44px; border: 0; background: transparent; color: var(--ink); font-size: 20px; cursor: pointer; }
+.stepper button:active, .rstep button:active { background: var(--line); }
+.stepper input, .rstep input { width: 52px; border: 0; border-inline: 1px solid var(--line); background: var(--surface); color: var(--ink); text-align: center; font: 500 17px var(--f-mono); font-variant-numeric: tabular-nums; padding: 0; }
 
 .task { display: grid; grid-template-columns: 24px 48px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 48px; padding-block: 6px; border-bottom: 1px solid var(--line); cursor: pointer; }
 .task:last-child { border-bottom: 0; }
@@ -74,6 +74,9 @@ h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 20px
 .coldhint { padding-inline-start: 82px; }
 .rows { display: flex; flex-direction: column; gap: 8px; padding-block: 8px 4px; }
 .note { display: block; width: 100%; min-height: 96px; margin-top: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: 400 15px/1.6 var(--f-body); resize: vertical; }
+.row.cnt { grid-template-columns: minmax(0, 1fr) auto 44px; }
+.rstep input { width: 40px; min-width: 0; }
+.rstep button { width: 38px; }
 .row { display: grid; grid-template-columns: minmax(0, 1fr) 96px 44px; gap: 8px; }
 .row.one { grid-template-columns: minmax(0, 1fr) 44px; }
 .rowin { min-width: 0; min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); padding: 0 10px; font: 400 15px var(--f-body); }
