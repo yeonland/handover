@@ -1329,9 +1329,12 @@
           '<input class="rowin" type="time" data-wks="' + dw + '" value="' + toInput(w ? w.s : 1140) + '" aria-label="' + DAYS[dw] + '요일 시작"' + (w ? '' : ' disabled') + '>' +
           '<input class="rowin" type="time" data-wke="' + dw + '" value="' + toInput(w ? w.e : 1440) + '" aria-label="' + DAYS[dw] + '요일 끝"' + (w ? '' : ' disabled') + '></div>';
       }).join('') + '</div>';
-    h += '<div class="setgrp"><h3>보이는 항목</h3>' + SECTIONS.map(function (x) {
-      return '<label class="chk"><input type="checkbox" data-shide="' + x[0] + '"' + (on(x[0]) ? ' checked' : '') + '> ' + x[1] + '</label>';
-    }).join('') + '</div>';
+    const shown = SECTIONS.filter(function (x) { return on(x[0]); }), hidden = SECTIONS.filter(function (x) { return !on(x[0]); });
+    h += '<div class="setgrp"><h3>보이는 항목</h3><div class="chips">' + shown.map(function (x) {
+      return '<span class="chip">' + x[1] + '<button type="button" data-shoff="' + x[0] + '" aria-label="' + x[1] + ' 빼기">×</button></span>';
+    }).join('') + '</div>' + (hidden.length ? '<h3 class="subh">뺀 항목 · 누르면 다시 넣어요</h3><div class="chips">' + hidden.map(function (x) {
+      return '<button type="button" class="chip chipoff" data-shon="' + x[0] + '" aria-label="' + x[1] + ' 다시 넣기">＋ ' + x[1] + '</button>';
+    }).join('') + '</div>' : '') + '</div>';
     h += '<div class="setgrp"><h3>종량제 봉투 규격</h3><div class="chips">' + S.cfg.bags.map(function (b, i) {
       return '<span class="chip">' + esc(b) + '<button type="button" data-sdel="bags:' + i + '" aria-label="' + esc(b) + ' 빼기">×</button></span>';
     }).join('') + '</div><div class="addrow"><input class="rowin" id="bagIn" placeholder="예: 3L" aria-label="추가할 봉투 규격" autocomplete="off"><button type="button" class="reset" data-sadd="bags">추가</button></div></div>';
@@ -1375,6 +1378,10 @@
   document.getElementById('view-set').addEventListener('click', function (e) {
     const b = e.target.closest('button');
     if (!b) return;
+    if (b.dataset.shoff || b.dataset.shon) {
+      if (b.dataset.shoff) S.cfg.hide[b.dataset.shoff] = true; else delete S.cfg.hide[b.dataset.shon];
+      cfgChanged(); return;
+    }
     if (b.dataset.sadd) {
       const k = b.dataset.sadd;
       if (k === 'bags') {
