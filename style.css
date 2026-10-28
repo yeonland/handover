@@ -1,7 +1,10 @@
 /* 근무 인수인계 웹앱 스타일 — Clean Utility UI
    디자인 토큰(:root) · 라이트/다크 모드 · 모바일 우선
-   폰트: Jua(맨 위 제목만) + Noto Sans KR(나머지 전부), 숫자는 tabular-nums
+   폰트: Jua(맨 위 제목·카드 제목) + 부산단디고딕(나머지 전부), 숫자는 tabular-nums
    색: CU 보라(브랜드 강조) · CU 연두(주요 버튼·선택 상태) */
+@font-face { font-family: 'BusanDandiGothic'; src: url('fonts/BusanDandiGothic-L.woff2') format('woff2'); font-weight: 300; font-display: swap; }
+@font-face { font-family: 'BusanDandiGothic'; src: url('fonts/BusanDandiGothic-M.woff2') format('woff2'); font-weight: 400 500; font-display: swap; }
+@font-face { font-family: 'BusanDandiGothic'; src: url('fonts/BusanDandiGothic-B.woff2') format('woff2'); font-weight: 600 800; font-display: swap; }
 :root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body { margin: 0; }
 img { max-width: 100%; }
@@ -28,8 +31,8 @@ img { max-width: 100%; }
   --paper-ink: #202631;
   --r-card: 12px;
   --r-ctl: 9px;
-  --f-display: 'Jua', 'Noto Sans KR', sans-serif;
-  --f-body: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+  --f-display: 'Jua', 'BusanDandiGothic', sans-serif;
+  --f-body: 'BusanDandiGothic', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
   --f-mono: var(--f-body); /* 예전 고정폭 자리: 본문 폰트 + tabular-nums 로 통일 */
 }
 @media (prefers-color-scheme: dark) {
@@ -66,7 +69,7 @@ h1 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 25px
 /* ---- 카드 ---- */
 .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); padding: 16px; }
 .sh { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 10px; margin-bottom: 2px; border-bottom: 1px solid var(--line-soft); }
-h2 { margin: 0; font-family: var(--f-body); font-weight: 700; font-size: 18px; line-height: 1.35; color: var(--ink); }
+h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 20px; line-height: 1.3; color: var(--ink); }
 .tot { font-size: 13px; color: var(--muted); white-space: nowrap; }
 
 .line { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding-block: 10px; border-bottom: 1px solid var(--line-soft); }
@@ -116,7 +119,7 @@ h2 { margin: 0; font-family: var(--f-body); font-weight: 700; font-size: 18px; l
 
 /* ---- 보낼 글 미리보기 ---- */
 .preview-head { display: flex; align-items: center; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; margin-top: 8px; }
-.preview-head h2 { font-size: 18px; }
+.preview-head h2 { font-size: 20px; }
 .chk { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; min-height: 44px; }
 .chk input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
 .receipt { margin: 0; padding: 16px; background: var(--paper); color: var(--paper-ink); border: 1px solid var(--line); border-radius: var(--r-card); font: 400 14px/1.75 var(--f-body); white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -172,7 +175,7 @@ h2 { margin: 0; font-family: var(--f-body); font-weight: 700; font-size: 18px; l
 
 /* ---- 달력 ---- */
 .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.cal-head strong { font-family: var(--f-body); font-weight: 700; font-size: 18px; }
+.cal-head strong { font-family: var(--f-display); font-weight: 400; font-size: 20px; }
 .nav { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: var(--r-ctl); background: var(--surface); color: var(--ink); font-size: 20px; cursor: pointer; }
 .cal-sum { margin: 6px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
 .dow, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
@@ -193,7 +196,7 @@ h2 { margin: 0; font-family: var(--f-body); font-weight: 700; font-size: 18px; l
 .recbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 .recbtns { display: flex; gap: 8px; flex-wrap: wrap; }
 .calstatus { margin: 0; min-height: 20px; font-size: 13px; color: var(--muted); }
-.backup summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-family: var(--f-body); font-weight: 700; font-size: 18px; }
+.backup summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font-family: var(--f-display); font-weight: 400; font-size: 20px; }
 
 /* ---- 지금 근무: 남은 시간 | 번 돈 나란히 ---- */
 .livegrid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: end; gap: 12px 16px; margin-top: 12px; }
