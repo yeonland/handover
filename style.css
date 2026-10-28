@@ -290,4 +290,6 @@ input:focus, textarea:focus { border-color: var(--brand2); }
 .sheet:empty { display: none; }
 /* 정기 근무 시간 입력: 좁은 화면에서 시간 글자가 잘리지 않게 */
 .wkrow { grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr); }
-.wkrow .rowin { padding: 0 6px; font-size: 14px; }
+.wkrow .rowin { width: 100%; min-width: 0; padding: 0 6px; font-size: 14px; }
+.wkrow .rowin::-webkit-calendar-picker-indicator { margin-left: 0; }
+.wkrow + .wkrow { margin-top: 8px; }
