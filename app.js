@@ -185,12 +185,12 @@
   function build() {
     const app = document.getElementById('app');
     let h = '';
-    h += '<section class="sheet"><div class="sh"><h2>지금 근무</h2><span class="tot" id="liveClock"></span></div>' +
-      '<p class="livemain" id="liveMain"></p><p class="earn" id="liveEarn" hidden></p><p class="livesub" id="liveSub"></p>' +
+    h += '<section class="sheet live"><div class="sh"><h2>지금 근무</h2><span class="tot" id="liveClock"></span></div>' +
+      '<div class="livegrid"><p class="livemain" id="liveMain"></p><p class="earn" id="liveEarn" hidden></p></div><p class="livesub" id="liveSub"></p>' +
       '<div class="track" id="liveTrack" role="progressbar" aria-label="오늘 근무 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="fill" id="liveFill"></div></div>' +
       '<div id="liveHint"></div></section>';
-    if (on('notices')) h += '<section class="sheet"><div class="sh"><h2>점장님 전달 사항</h2><span class="tot" id="noticeCnt"></span></div><div id="noticeList"></div>' +
-      '<div class="addrow"><input class="rowin" id="noticeIn" placeholder="전달 사항 한 줄" aria-label="전달 사항 입력" autocomplete="off"><button type="button" class="reset" id="noticeAdd">추가</button></div>' +
+    if (on('notices')) h += '<section class="sheet"><div class="sh"><h2>점장님 전달 사항</h2><span class="tot" id="noticeCnt"></span></div>' +
+      '<div class="addrow"><input class="rowin" id="noticeIn" placeholder="전달 사항 한 줄" aria-label="전달 사항 입력" autocomplete="off"><button type="button" class="reset" id="noticeAdd">추가</button></div><div id="noticeList"></div>' +
       '<button type="button" class="add" id="noticeClear" hidden>완료한 것 지우기</button></section>';
     if (on('tasks')) h += '<section class="sheet"><div class="sh"><h2>오늘 할 일</h2><span class="tot" id="shift"></span></div><div id="tasks"></div></section>';
     if (on('coins')) {
@@ -622,7 +622,7 @@
         '<span>' + esc(n.t) + '</span></label>' +
         '<button type="button" class="pin" data-npin="' + i + '" aria-pressed="' + (n.pin ? 'true' : 'false') + '" aria-label="' + (n.pin ? '고정 해제' : '위에 고정') + '">📌</button>' +
         '<button type="button" class="rm" data-ndel="' + i + '" aria-label="전달 사항 지우기">×</button></div>';
-    }).join('') : '<p class="none">폐기 규칙처럼 계속 봐야 하는 건 📌로 고정해 두세요. 고정한 글은 항상 맨 위에 남아요.</p>';
+    }).join('') : '<p class="none">📌를 누르면 항상 맨 위에 고정돼요.</p>';
   }
   function addNotice() {
     const inp = document.getElementById('noticeIn'), t = inp.value.trim();
