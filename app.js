@@ -1343,8 +1343,10 @@
     }).join('') + '</div><div class="addrow"><input class="rowin num" id="stkIn" inputmode="numeric" placeholder="예: 4000" aria-label="추가할 스티커 금액" autocomplete="off"><button type="button" class="reset" data-sadd="stickers">추가</button></div></div>';
     h += '<div class="setgrp"><h3>내가 만드는 항목</h3>';
     h += S.cfg.custom.length ? S.cfg.custom.map(function (c, j) {
-      return '<div class="man"><b>' + esc(c.t) + '</b><div class="chips">' + c.items.map(function (n, i) {
-        return '<span class="chip">' + esc(n) + '<button type="button" data-sdel="cu:' + j + ':' + i + '" aria-label="' + esc(n) + ' 빼기">×</button></span>';
+      // 위: 제목·세부 항목을 바로 고치는 칸 / 아래: 새 세부 항목 추가
+      return '<div class="man cuedit"><label class="fld">항목 제목<input class="rowin" data-cut="' + j + '" value="' + esc(c.t) + '" aria-label="항목 제목 고치기" autocomplete="off"></label>' +
+        '<div class="fld">세부 항목</div><div class="rows">' + c.items.map(function (n, i) {
+        return '<div class="row one"><input class="rowin" data-cui="' + j + ':' + i + '" value="' + esc(n) + '" aria-label="' + esc(n) + ' 고치기" autocomplete="off"><button type="button" class="rm" data-sdel="cu:' + j + ':' + i + '" aria-label="' + esc(n) + ' 빼기">×</button></div>';
       }).join('') + '</div><div class="addrow"><input class="rowin" id="cuIn' + j + '" placeholder="세부 항목 추가" aria-label="' + esc(c.t) + ' 세부 항목" autocomplete="off"><button type="button" class="reset" data-sadd="cu:' + j + '">추가</button></div>' +
         '<button type="button" class="linkbtn" data-sdel="cusec:' + j + '">이 항목 통째로 지우기</button></div>';
     }).join('') : '<p class="none">예: 제목 "택배 접수", 세부 항목 "일반 택배, 반값 택배"처럼 적으면 개수 버튼이 생겨요.</p>';
@@ -1370,6 +1372,18 @@
     if (d.wk !== undefined) { weekSave(d.wk); return; }
     if (d.wks !== undefined) { weekSave(d.wks); return; }
     if (d.wke !== undefined) { weekSave(d.wke); return; }
+    if (d.cut !== undefined) {
+      const c = S.cfg.custom[Number(d.cut)], v = e.target.value.trim();
+      if (!c) return;
+      if (!v) { e.target.value = c.t; setSay('제목은 비워 둘 수 없어요.'); return; }
+      c.t = v; setSay('제목을 고쳤어요.'); cfgChanged(); return;
+    }
+    if (d.cui !== undefined) {
+      const q = d.cui.split(':'), c = S.cfg.custom[Number(q[0])], i = Number(q[1]), v = e.target.value.trim();
+      if (!c || i >= c.items.length) return;
+      if (!v) { e.target.value = c.items[i]; setSay('지우려면 옆의 ×를 눌러 주세요.'); return; }
+      c.items[i] = v; setSay('세부 항목을 고쳤어요.'); cfgChanged(); return;
+    }
     if (e.target.dataset.shide) {
       if (e.target.checked) delete S.cfg.hide[e.target.dataset.shide]; else S.cfg.hide[e.target.dataset.shide] = true;
       cfgChanged();
