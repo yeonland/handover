@@ -130,7 +130,7 @@
       }
       return '<label class="task ' + cls + '"><input type="checkbox" data-task="' + t.id + '"' + (done ? ' checked' : '') + '>' +
         '<span class="tt">' + t.t + '</span><span class="tn">' + t.n + '</span><span class="ts">' + st + '</span></label>' +
-        (t.id === 'cold' ? '<div class="coldtime nb"><label for="coldTime">도착 시각</label><input type="time" id="coldTime" value="' + esc(S.tasks.time || '') + '"><label for="boxCnt">정리</label><input type="number" id="boxCnt" inputmode="numeric" min="0" class="boxcnt" value="' + esc(S.boxes[todayKey()] === undefined ? '' : String(S.boxes[todayKey()])) + '"><span>박스</span></div><div class="coldtime"><label for="coldEnd">완료 시각</label><input type="time" id="coldEnd" value="' + esc(S.tasks.end || '') + '"><span>' + coldTook() + '</span></div>' + coldHintHtml() : '');
+        (t.id === 'cold' ? '<div class="coldtime nb"><label for="coldTime">도착 시각</label><input type="time" id="coldTime" value="' + esc(S.tasks.time || '') + '"><span class="grp"><label for="boxCnt">정리</label><input type="number" id="boxCnt" inputmode="numeric" min="0" class="boxcnt" value="' + esc(S.boxes[todayKey()] === undefined ? '' : String(S.boxes[todayKey()])) + '"><span>박스</span></span></div><div class="coldtime"><label for="coldEnd">완료 시각</label><input type="time" id="coldEnd" value="' + esc(S.tasks.end || '') + '"><span>' + coldTook() + '</span></div>' + coldHintHtml() : '');
     }).join('');
   }
   let S = fresh();
