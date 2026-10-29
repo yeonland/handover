@@ -299,3 +299,14 @@ input:focus, textarea:focus { border-color: var(--brand2); }
 .cuedit .rows { padding-block: 0; }
 .cuedit .addrow { margin-top: 4px; }
 .cuedit .linkbtn { align-self: flex-start; }
+
+/* 처음 설정 안내, 새 버전 알림 */
+#welcome .wzh { margin: 14px 0 0; font-size: 15px; }
+#welcome .times { margin-block: 4px 8px; }
+.daychip { min-width: 44px; justify-content: center; padding: 0 12px; background: var(--field); cursor: pointer; font: 500 15px var(--f-body); color: var(--ink); }
+.daychip[aria-pressed="true"] { background: var(--fill); color: var(--fill-ink); border-color: var(--fill); }
+.wzcfg { margin-top: 10px; }
+.wzcfg summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 14px; color: var(--muted); }
+.wzgo { margin-top: 12px; }
+.reset.primary { background: var(--fill); color: var(--fill-ink); border-color: var(--fill); font-weight: 700; }
+.updbar { position: fixed; left: 12px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 10px; max-width: 516px; margin-inline: auto; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: 0 6px 18px rgba(0,0,0,.18); font-size: 14px; }

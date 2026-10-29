@@ -1,6 +1,7 @@
 /* 근무 인수인계 웹앱: 입력 폼, 카톡용 글 만들기, 달력, 소비기한, 사진, 설정 */
 (function () {
   const KEY = 'handover-v1';
+  const APP_VERSION = '2026.10.29-1';
   const COINS = [{ v: 500, n: 50 }, { v: 500, n: 40 }, { v: 100, n: 50 }, { v: 50, n: 50 }, { v: 10, n: 50 }];
   const GIFT = [{ v: 50000, t: '5만원권' }, { v: 10000, t: '1만원권' }, { v: 5000, t: '5천원권' }];
   const LISTS = [
@@ -45,6 +46,7 @@
       cold: {},
       boxes: {},
       coldEnd: {},
+      onboarded: false,
       tasks: { d: '', done: {} }
     };
   }
@@ -145,6 +147,8 @@
       else { S.history = f.history || {}; S.wage = f.wage; S.ov = f.ov; S.notices = f.notices; S.manual = f.manual; S.readNext = f.readNext; S.week = f.week; S.cfg = f.cfg; S.cc = f.cc; S.exp = f.exp; S.expCfg = f.expCfg; S.bags = BAGS.map(function () { return 0; }); S.stickers = STICKERS.map(function () { return 0; }); S.me = f.me; S.repFuture = f.repFuture; S.cold = f.cold; S.boxes = f.boxes || {}; S.coldEnd = f.coldEnd || {}; }
     }
   } catch (e) {}
+  function hasData() { return !!(Object.keys(S.history).length || Object.keys(S.week).length || (S.me && (S.me.name || '').trim())); }
+  if (!S.onboarded && hasData()) S.onboarded = true;
   function applyCfg(c) {
     if (!c || typeof c !== 'object') return;
     if (!c.hide || typeof c.hide !== 'object') c.hide = {};
@@ -251,6 +255,7 @@
     if (on('next')) document.getElementById('nextNote').value = S.next || '';
     LISTS.forEach(function (L) { if (on(L.k)) { renderRows(L.k); renderNames(L.k); } });
     document.getElementById('showEmpty').checked = !!S.showEmpty;
+    renderWelcome();
     renderTasks();
     renderNotices();
     renderPhotos();
@@ -1467,6 +1472,127 @@
   tabS.addEventListener('click', function () { showTab('set'); });
   tabE.addEventListener('click', function () { showTab('exp'); });
   function applyTabs() { tabE.hidden = !on('expiry'); if (!on('expiry') && tabE.getAttribute('aria-selected') === 'true') showTab('report'); }
+
+
+  /* ---- 처음 설정 안내 ---- */
+  let wz = { name: '', no: '', days: [], s: '19:00', e: '00:00', open: false, msg: '' };
+  function wzRead() {
+    const g = function (id) { const e = document.getElementById(id); return e ? e.value : ''; };
+    wz.name = g('wzName'); wz.no = g('wzNo'); wz.s = g('wzS') || wz.s; wz.e = g('wzE') || wz.e;
+    wz.days = Array.prototype.map.call(document.querySelectorAll('#wzDays [aria-pressed="true"]'), function (d) { return d.dataset.wzd; });
+  }
+  function renderWelcome() {
+    const box = document.getElementById('welcome');
+    if (!box) return;
+    if (S.onboarded) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = '<div class="sh"><h2>처음 오셨네요</h2></div>' +
+      '<p class="none">1분이면 끝나요. 입력한 내용은 이 폰에만 저장되고, 설정 탭에서 언제든 바꿀 수 있어요.</p>' +
+      '<div class="fields"><label class="fld">이름<input class="rowin" id="wzName" value="' + esc(wz.name) + '" autocomplete="off"></label>' +
+      '<label class="fld">번호<input class="rowin num" id="wzNo" value="' + esc(wz.no) + '" inputmode="numeric" autocomplete="off"></label></div>' +
+      '<h3 class="wzh">근무하는 요일</h3><div class="chips" id="wzDays">' +
+      [1, 2, 3, 4, 5, 6, 0].map(function (dw) { return '<button type="button" class="chip daychip" data-wzd="' + dw + '" aria-pressed="' + (wz.days.indexOf(String(dw)) >= 0) + '">' + DAYS[dw] + '</button>'; }).join('') + '</div>' +
+      '<div class="times"><label for="wzS">시작</label><input type="time" id="wzS" value="' + wz.s + '"><label for="wzE">끝</label><input type="time" id="wzE" value="' + wz.e + '"></div>' +
+      '<div class="pnote"><b>알아 두세요</b><p>동전·상품권 재고는 이 폰에만 저장돼요. 다른 사람과 같은 재고를 이어서 쓰려면 근무 시작 때 실제 수량에 맞춰 주세요.</p></div>' +
+      '<details class="wzcfg"' + (wz.open ? ' open' : '') + '><summary>동료나 점장님께 받은 매장 설정이 있어요</summary><textarea class="note" id="wzCfg" aria-label="매장 설정 붙여넣기" placeholder="받은 매장 설정 글을 붙여넣어요"></textarea>' +
+      '<div class="recbtns"><button type="button" class="reset" id="wzCfgApply">매장 설정 가져오기</button></div></details>' +
+      '<div class="recbtns wzgo"><button type="button" class="reset primary" id="wzStart">시작하기</button><button type="button" class="reset" id="wzSkip">나중에 할게요</button></div>' +
+      '<p class="calstatus" id="wzStatus" role="status" aria-live="polite">' + esc(wz.msg) + '</p>';
+  }
+  document.getElementById('welcome').addEventListener('click', function (e) {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.wzd !== undefined) { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); return; }
+    if (b.id === 'wzSkip') { S.onboarded = true; save(); renderWelcome(); return; }
+    if (b.id === 'wzCfgApply') {
+      wzRead();
+      const ok = applyStoreConfig(document.getElementById('wzCfg').value);
+      wz.open = true; wz.msg = ok ? '매장 설정을 가져왔어요. 아래에서 시작하기를 눌러 주세요.' : '읽지 못했어요. 받은 글 전체를 붙여넣었는지 확인하세요.';
+      renderWelcome();
+      return;
+    }
+    if (b.id === 'wzStart') {
+      const nm = document.getElementById('wzName').value.trim(), no = digits(document.getElementById('wzNo').value);
+      const s = document.getElementById('wzS').value, z = document.getElementById('wzE').value;
+      S.me = { name: nm, no: no };
+      if (s && z) {
+        const m1 = Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5)), m2 = Number(z.slice(0, 2)) * 60 + Number(z.slice(3, 5));
+        document.querySelectorAll('#wzDays [aria-pressed="true"]').forEach(function (d) { S.week[d.dataset.wzd] = { s: m1, e: m2 <= m1 ? m2 + 1440 : m2 }; });
+      }
+      S.onboarded = true;
+      save(); build(); refresh(); tick(); renderCal();
+      say('설정을 저장했어요. 설정 탭에서 언제든 바꿀 수 있어요.');
+    }
+  });
+
+  /* ---- 매장 설정 내보내기·가져오기 (시급·이름·기록은 넣지 않아요) ---- */
+  const SEC_IDS = SECTIONS.map(function (x) { return x[0]; });
+  function storeConfigText() {
+    return JSON.stringify({
+      kind: 'cu-store-config', v: 1,
+      cfg: S.cfg,
+      manual: S.manual,
+      notices: S.notices.filter(function (n) { return n.pin; }).map(function (n) { return { t: n.t, pin: true }; }),
+      expTimes: S.expCfg.times
+    });
+  }
+  function applyStoreConfig(txt) {
+    let o;
+    try { o = JSON.parse(txt); } catch (err) { return false; }
+    if (!o || o.kind !== 'cu-store-config' || !o.cfg || !Array.isArray(o.cfg.bags) || !Array.isArray(o.cfg.stickers)) return false;
+    const hide = {};
+    if (o.cfg.hide && typeof o.cfg.hide === 'object') Object.keys(o.cfg.hide).forEach(function (k) { if (SEC_IDS.indexOf(k) >= 0 && o.cfg.hide[k]) hide[k] = true; });
+    S.cfg = {
+      hide: hide,
+      bags: o.cfg.bags.map(function (b) { return String(b).slice(0, 12); }).filter(Boolean).slice(0, 30),
+      stickers: o.cfg.stickers.map(Number).filter(function (v) { return v > 0 && v < 1e7; }).slice(0, 30),
+      custom: (Array.isArray(o.cfg.custom) ? o.cfg.custom : []).filter(function (c) { return c && typeof c.t === 'string' && Array.isArray(c.items); }).slice(0, 20).map(function (c, k) {
+        return { id: 'c' + Date.now() + k, t: c.t.slice(0, 40), items: c.items.map(function (x) { return String(x).slice(0, 40); }).filter(Boolean).slice(0, 30) };
+      })
+    };
+    if (Array.isArray(o.manual)) {
+      S.manual = o.manual.filter(function (x) { return x && typeof x.t === 'string' && typeof x.b === 'string'; }).slice(0, 100).map(function (x) { return { t: x.t.slice(0, 80), b: x.b.slice(0, 5000) }; });
+    }
+    if (Array.isArray(o.notices)) {
+      const keep = S.notices.filter(function (n) { return !n.pin; });
+      S.notices = o.notices.filter(function (x) { return x && typeof x.t === 'string'; }).slice(0, 50).map(function (x) { return { t: x.t.slice(0, 200), done: false, pin: true }; }).concat(keep);
+    }
+    if (Array.isArray(o.expTimes)) S.expCfg.times = o.expTimes.filter(function (t) { return /^\d{2}:\d{2}$/.test(t); }).slice(0, 8);
+    applyCfg(S.cfg);
+    S.bags = BAGS.map(function () { return 0; });
+    S.stickers = STICKERS.map(function () { return 0; });
+    S.cc = {};
+    save(); build(); refresh(); renderNotices(); renderManual(); renderExp(); try { renderSettings(); } catch (err) {} applyTabs();
+    return true;
+  }
+  (function () {
+    const box = document.getElementById('shareTxt'), st = document.getElementById('shareStatus');
+    document.getElementById('shareVer').textContent = '앱 버전 ' + APP_VERSION;
+    document.getElementById('shareCopy').addEventListener('click', function () {
+      const j = storeConfigText();
+      box.value = j;
+      const fb = function () { box.focus(); box.select(); st.textContent = '글이 선택됐어요. 길게 눌러 복사하세요.'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(j).then(function () { st.textContent = '매장 설정을 복사했어요. 동료에게 카톡으로 보내 주세요. 시급과 개인 기록은 들어 있지 않아요.'; }, fb);
+      else fb();
+    });
+    document.getElementById('shareApply').addEventListener('click', function () {
+      st.textContent = applyStoreConfig(box.value) ? '매장 설정을 가져왔어요. 매뉴얼, 항목, 봉투·스티커 규격이 바뀌었어요.' : '읽지 못했어요. 받은 글 전체를 붙여넣었는지 확인하세요.';
+    });
+  })();
+
+  /* ---- 오프라인 캐시(PWA)와 새 버전 알림 ---- */
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    const hadCtl = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js?v=' + APP_VERSION).then(function (reg) { reg.update(); }).catch(function () {});
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadCtl || document.getElementById('updBar')) return;
+      const bar = document.createElement('div');
+      bar.id = 'updBar'; bar.className = 'updbar'; bar.setAttribute('role', 'status');
+      bar.innerHTML = '<span>새 버전을 받았어요.</span><button type="button" class="reset">다시 불러오기</button>';
+      bar.querySelector('button').addEventListener('click', function () { location.reload(); });
+      document.body.appendChild(bar);
+    });
+  }
 
   document.getElementById('today').textContent = shiftDate().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' });
   build();

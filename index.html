@@ -8,7 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261028f">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#693b97">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css?v=20261029a">
 </head>
 <body>
 <main class="wrap">
@@ -28,6 +31,7 @@
   </nav>
   <div class="expban" id="expBanner" role="status" hidden></div>
   <div id="view-report" class="view">
+    <section class="sheet" id="welcome" hidden></section>
     <div id="app" class="view"></div>
     <div class="preview-head">
       <h2>보낼 글</h2>
@@ -64,6 +68,14 @@
   <div id="view-set" class="view" hidden>
     <section class="sheet" id="setBox"></section>
     <p class="calstatus" id="setStatus" role="status" aria-live="polite"></p>
+    <section class="sheet" id="shareBox">
+      <div class="sh"><h2>매장 설정 공유</h2></div>
+      <p class="none">매뉴얼, 전달 사항(고정), 보이는 항목, 봉투·스티커 규격을 글로 복사해 동료에게 보내거나, 받은 글로 가져올 수 있어요. 이름·시급·근무 기록은 들어가지 않아요. 가져오면 지금 설정과 매뉴얼이 바뀌어요.</p>
+      <textarea class="note" id="shareTxt" aria-label="매장 설정 글" placeholder="받은 매장 설정 글을 여기에 붙여넣어요"></textarea>
+      <div class="recbtns" style="margin-top:8px"><button type="button" class="reset" id="shareCopy">매장 설정 복사</button><button type="button" class="reset" id="shareApply">붙여넣은 설정 가져오기</button></div>
+      <p class="calstatus" id="shareStatus" role="status" aria-live="polite"></p>
+      <p class="none" id="shareVer"></p>
+    </section>
   </div>
   <div id="view-cal" class="view" hidden>
     <section class="sheet" id="cal"></section>
@@ -89,6 +101,6 @@
   <button type="button" id="copy">카톡용으로 복사</button>
 </div></div>
 
-<script src="app.js?v=20261028f" defer></script>
+<script src="app.js?v=20261029a" defer></script>
 </body>
 </html>
