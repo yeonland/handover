@@ -1,7 +1,7 @@
 /* 근무 인수인계 웹앱: 입력 폼, 카톡용 글 만들기, 달력, 소비기한, 사진, 설정 */
 (function () {
   const KEY = 'handover-v1';
-  const APP_VERSION = '2026.10.29-1';
+  const APP_VERSION = '2026.10.29-2';
   const COINS = [{ v: 500, n: 50 }, { v: 500, n: 40 }, { v: 100, n: 50 }, { v: 50, n: 50 }, { v: 10, n: 50 }];
   const GIFT = [{ v: 50000, t: '5만원권' }, { v: 10000, t: '1만원권' }, { v: 5000, t: '5천원권' }];
   const LISTS = [
@@ -1497,12 +1497,14 @@
       '<details class="wzcfg"' + (wz.open ? ' open' : '') + '><summary>동료나 점장님께 받은 매장 설정이 있어요</summary><textarea class="note" id="wzCfg" aria-label="매장 설정 붙여넣기" placeholder="받은 매장 설정 글을 붙여넣어요"></textarea>' +
       '<div class="recbtns"><button type="button" class="reset" id="wzCfgApply">매장 설정 가져오기</button></div></details>' +
       '<div class="recbtns wzgo"><button type="button" class="reset primary" id="wzStart">시작하기</button><button type="button" class="reset" id="wzSkip">나중에 할게요</button></div>' +
+      '<button type="button" class="linkbtn" id="wzGuide">사용 안내 먼저 보기</button>' +
       '<p class="calstatus" id="wzStatus" role="status" aria-live="polite">' + esc(wz.msg) + '</p>';
   }
   document.getElementById('welcome').addEventListener('click', function (e) {
     const b = e.target.closest('button');
     if (!b) return;
     if (b.dataset.wzd !== undefined) { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); return; }
+    if (b.id === 'wzGuide') { showTab('set'); const g = document.getElementById('guideBox'); if (g) { g.open = true; g.scrollIntoView({ block: 'start' }); } return; }
     if (b.id === 'wzSkip') { S.onboarded = true; save(); renderWelcome(); return; }
     if (b.id === 'wzCfgApply') {
       wzRead();
@@ -1579,6 +1581,69 @@
       st.textContent = applyStoreConfig(box.value) ? '매장 설정을 가져왔어요. 매뉴얼, 항목, 봉투·스티커 규격이 바뀌었어요.' : '읽지 못했어요. 받은 글 전체를 붙여넣었는지 확인하세요.';
     });
   })();
+
+  /* ---- 칸마다 붙는 짧은 도움말(?) ---- */
+  const HELP = {
+    '지금 근무': '설정한 정기 근무 시간으로 남은 시간과 오늘 번 돈(세전 대략)을 보여 줘요. 시급은 달력 탭에서 넣어요.',
+    '점장님 전달 사항': '점장님께 들은 일을 한 줄씩 적어 둬요. 📌를 누르면 고정돼서 다음 근무에도 남고, 체크하면 완료로 표시돼요.',
+    '오늘 할 일': '시간이 되면 "지금", 지나면 "시간 지남"으로 바뀌어요. 저온 물류는 도착·완료 시각과 정리한 박스 수를 적어 두면 평균을 알려 줘요. 이 내용은 보고 글에 들어가지 않아요.',
+    '동전': '교대할 때 남은 동전 묶음 수를 세어 넣어요. 숫자는 다음 근무에도 그대로 남아 있어서 바뀐 것만 고치면 돼요.',
+    '문화상품권 재고': '남은 상품권 장수를 넣어요. 다음 근무에도 그대로 남아요.',
+    '문화상품권 판매': '이번 근무에 판 장수만 넣어요. 새 근무 시작을 누르면 0으로 돌아가요.',
+    '담배 보루 판매': '담배 이름을 한 번 적으면 위에 버튼이 생겨요. 버튼을 누르면 1보루씩 늘고, 줄마다 −/+로 고칠 수 있어요. 0인 줄은 보고에 안 나가요.',
+    '종량제 봉투 판매': '판 봉투 수를 규격별로 넣어요. 규격은 설정 탭에서 바꿀 수 있어요.',
+    '폐기물 스티커 판매': '판 스티커 수를 금액별로 넣어요. 금액은 설정 탭에서 바꿀 수 있어요.',
+    '계좌이체': '받은 금액을 한 줄씩 넣어요. 메모는 선택이고, 두 건 이상이면 합계가 함께 나가요.',
+    '부분환불': '환불한 금액을 넣어요. 내용은 선택이에요.',
+    '사진': '냉장 진열, 폐기, 기타로 나눠 올려요. 보내기를 누르면 카톡 등으로 바로 공유돼요. 사진은 백업에 들어가지 않고 60일 뒤 지워져요.',
+    '특이사항': '점장님께 전할 말을 적어요. 보고 글 맨 아래에 들어가요.',
+    '다음 근무자에게': '다음 사람에게 넘길 일을 적어요. 보고 글에는 안 들어가고, "이 내용만 복사"로 따로 보낼 수 있어요.',
+    '지난 근무와 비교': '지난 기록과 동전·상품권 수를 비교해서 크게 달라진 곳을 알려 줘요.',
+    '보낼 글': '위에서 채운 내용으로 만들어진 카톡용 글이에요. 아래 "카톡용으로 복사"를 누르면 복사되고 그날 기록이 달력에 저장돼요.',
+    '업무 매뉴얼': '자주 헷갈리는 업무 순서를 적어 둬요. 설정 탭의 매장 설정 공유로 동료에게 넘길 수 있어요.',
+    '소비기한 추가': '상품명과 소비기한을 넣으면 임박한 순서로 정리되고, 알림 시간에 확인할 상품을 알려 줘요.',
+    '확인 알림 시간': '이 시간에 앱이 열려 있으면 확인할 상품을 알려 줘요. 앱이 닫혀 있으면 알림이 오지 않아요.',
+    '저온 물류 도착 시각': '날짜별 도착 시각 기록이에요. 쌓일수록 요일별 평균이 정확해져요.',
+    '항목 설정': '우리 매장에 없는 항목은 빼고, 필요한 항목은 직접 만들어요. 뺀 항목은 화면과 보고 글에서 모두 사라져요.',
+    '매장 설정 공유': '매뉴얼과 항목 설정을 글로 복사해 동료에게 보내요. 이름·시급·기록은 들어가지 않아요.'
+  };
+  function helpKey(t) {
+    if (HELP[t]) return t;
+    if (/월 근무·급여$/.test(t)) return '근무·급여';
+    if (/월 근무시간 보고$/.test(t)) return '근무시간 보고';
+    return null;
+  }
+  HELP['근무·급여'] = '근무한 날과 시간, 시급으로 계산한 세전 대략 금액이에요. 주휴수당과 세금은 들어가지 않아요.';
+  HELP['근무시간 보고'] = '이번 달 근무 날짜와 시간을 점장님께 보낼 글로 만들어 줘요.';
+  let helpN = 0, helpQ = false;
+  function addHelp() {
+    helpQ = false;
+    document.querySelectorAll('.sh > h2, .preview-head > h2').forEach(function (h) {
+      const sh = h.parentNode;
+      if (sh.dataset.h) return;
+      sh.dataset.h = '1';
+      const k = helpKey(h.textContent.trim());
+      if (!k) return;
+      const id = 'hp' + (++helpN);
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'helpbtn'; btn.textContent = '?';
+      btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', id); btn.setAttribute('aria-label', h.textContent.trim() + ' 도움말');
+      h.insertAdjacentElement('afterend', btn);
+      const p = document.createElement('p');
+      p.className = 'helptxt'; p.id = id; p.hidden = true; p.textContent = HELP[k];
+      sh.insertAdjacentElement('afterend', p);
+    });
+  }
+  document.addEventListener('click', function (e) {
+    const b = e.target.closest('.helpbtn');
+    if (!b) return;
+    const p = document.getElementById(b.getAttribute('aria-controls'));
+    const open = b.getAttribute('aria-expanded') !== 'true';
+    b.setAttribute('aria-expanded', String(open));
+    if (p) p.hidden = !open;
+  });
+  new MutationObserver(function () { if (!helpQ) { helpQ = true; requestAnimationFrame(addHelp); } }).observe(document.body, { childList: true, subtree: true });
+  addHelp();
 
   /* ---- 오프라인 캐시(PWA)와 새 버전 알림 ---- */
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {

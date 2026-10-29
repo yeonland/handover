@@ -1,5 +1,5 @@
 /* 오프라인 캐시: 인터넷이 되면 항상 새 파일을 먼저 받아 오고, 안 될 때만 저장해 둔 복사본으로 열어요. */
-const VERSION = '2026.10.29-1';
+const VERSION = '2026.10.29-2';
 const CACHE = 'handover-' + VERSION;
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/BusanDandiGothic-L.woff2', 'fonts/BusanDandiGothic-M.woff2', 'fonts/BusanDandiGothic-B.woff2'];
