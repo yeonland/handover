@@ -1,7 +1,7 @@
 /* 근무 인수인계 웹앱 스타일 — Clean Utility UI
    디자인 토큰(:root) · 라이트/다크 모드 · 모바일 우선
    폰트: Jua(맨 위 제목·카드 제목) + 부산단디고딕(나머지 전부), 숫자는 tabular-nums
-   색: CU 보라(브랜드 강조) · CU 연두(주요 버튼·선택 상태) */
+   색: 교대노트 남색(브랜드 강조) · 잎 초록(주요 버튼·선택 상태) */
 @font-face { font-family: 'BusanDandiGothic'; src: url('fonts/BusanDandiGothic-L.woff2') format('woff2'); font-weight: 300; font-display: swap; }
 @font-face { font-family: 'BusanDandiGothic'; src: url('fonts/BusanDandiGothic-M.woff2') format('woff2'); font-weight: 400 500; font-display: swap; }
 @font-face { font-family: 'BusanDandiGothic'; src: url('fonts/BusanDandiGothic-B.woff2') format('woff2'); font-weight: 600 800; font-display: swap; }
@@ -18,12 +18,12 @@ img { max-width: 100%; }
   --muted: #667085;       /* 보조 텍스트 */
   --line: #E3E7ED;        /* 테두리 */
   --line-soft: #EEF1F5;   /* 카드 안 행 구분선 */
-  --accent: #4D7C0F;      /* 진한 초록: 금액·강조 글자 */
-  --fill: #A5CF4C;        /* CU 연두: 주요 버튼·선택 */
-  --fill-ink: #1A2408;
-  --fill-soft: #F1F8E3;
-  --brand2: #693B97;      /* CU 보라 */
-  --brand2-soft: #F3EEF8;
+  --accent: #3E7A1E;      /* 진한 초록: 금액·강조 글자 */
+  --fill: #8CCB5E;        /* 잎 초록: 주요 버튼·선택 */
+  --fill-ink: #15240A;
+  --fill-soft: #EEF7E6;
+  --brand2: #2E3A5F;      /* 교대노트 남색 */
+  --brand2-soft: #EDF0F6;
   --accent-ink: #FFFFFF;
   --warn: #B54708;
   --warn-soft: #FEF6EE;
@@ -38,15 +38,15 @@ img { max-width: 100%; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #111418; --surface: #1A1F26; --field: #222831; --ink: #E8EBF0; --muted: #9AA3B2; --line: #2B323C; --line-soft: #242A33;
-    --accent: #B5DA66; --fill: #A5CF4C; --fill-ink: #1A2408; --fill-soft: #26301A; --brand2: #B691DB; --brand2-soft: #2A2233;
-    --accent-ink: #1A2408; --warn: #F2A65A; --warn-soft: #2E2116; --paper: #1A1F26; --paper-ink: #E8EBF0;
+    --accent: #A8DC82; --fill: #8CCB5E; --fill-ink: #15240A; --fill-soft: #1F2C18; --brand2: #A9B8E6; --brand2-soft: #222838;
+    --accent-ink: #15240A; --warn: #F2A65A; --warn-soft: #2E2116; --paper: #1A1F26; --paper-ink: #E8EBF0;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #111418; --surface: #1A1F26; --field: #222831; --ink: #E8EBF0; --muted: #9AA3B2; --line: #2B323C; --line-soft: #242A33;
-  --accent: #B5DA66; --fill: #A5CF4C; --fill-ink: #1A2408; --fill-soft: #26301A; --brand2: #B691DB; --brand2-soft: #2A2233;
-  --accent-ink: #1A2408; --warn: #F2A65A; --warn-soft: #2E2116; --paper: #1A1F26; --paper-ink: #E8EBF0;
+  --accent: #A8DC82; --fill: #8CCB5E; --fill-ink: #15240A; --fill-soft: #1F2C18; --brand2: #A9B8E6; --brand2-soft: #222838;
+  --accent-ink: #15240A; --warn: #F2A65A; --warn-soft: #2E2116; --paper: #1A1F26; --paper-ink: #E8EBF0;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }

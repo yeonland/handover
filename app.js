@@ -1,7 +1,7 @@
 /* 근무 인수인계 웹앱: 입력 폼, 카톡용 글 만들기, 달력, 소비기한, 사진, 설정 */
 (function () {
   const KEY = 'handover-v1';
-  const APP_VERSION = '2026.10.29-2';
+  const APP_VERSION = '2026.10.29-3';
   const COINS = [{ v: 500, n: 50 }, { v: 500, n: 40 }, { v: 100, n: 50 }, { v: 50, n: 50 }, { v: 10, n: 50 }];
   const GIFT = [{ v: 50000, t: '5만원권' }, { v: 10000, t: '1만원권' }, { v: 5000, t: '5천원권' }];
   const LISTS = [
